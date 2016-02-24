@@ -53,7 +53,6 @@ ok
 ---
 
 ---
-
 QUESTIONS
 --
 If you have n connected clients, how many instances of thread are
@@ -93,7 +92,9 @@ This layer is also known as Internet layer. The main purpose of this layer is to
 This layer is also known as network interface layer. This layer normally consists of device drivers in the OS and the network interface card attached to the system. Both the device drivers and the network interface card take care of the communication details with the media being used to transfer the data over the network. In most of the cases, this media is in the form of cables. Some of the famous protocols that are used at this layer include ARP(Address resolution protocol), PPP(Point to point protocol) etc.
 --
 What does the flags, ACK, SYN and SEQ mean and what protocol do
-they belong to? 
+they belong to?
+
+TCP - Transport layer 
 
 SYN - (Synchronize) Initiates a connection
 
