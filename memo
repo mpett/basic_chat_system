@@ -55,23 +55,59 @@ ok
 ---
 
 QUESTIONS
-
+--
 If you have n connected clients, how many instances of thread are
 needed by the server?
-
+Varje klient får en egen tråd? n trådar
+--
 If you have n connected clients, how many instances of thread are
-needed by the client?
+needed by the client? En tråd
 
 What does the Java keyword synchronized do? 
-
+The synchronized keyword is all about different threads reading and writing to the same variables, objects and resources.
+--
 What is a runnable in Java?
+A Runnable is basically a type of class (Runnable is an Interface) that can be put into a thread, describing what the thread is supposed to do.
 
+The Runnable Interface requires of the class to implement the method run() like so:
+
+public class MyRunnableTask implements Runnable {
+     public void run() {
+         // do stuff here
+     }
+}
+And then use it like this:
+
+Thread t = new Thread(new MyRunnableTask());
+t.start();
+If you did not have the Runnable interface, the Thread class, which is responsible to execute your stuff in the other thread, would not have the promise to find a run() method in your class, so you could get errors. That is why you need to implement the interface.
+--
 Describe the four layers in the TCP/IP protocol stack. 
-
+1. Application layer
+This is the top layer of TCP/IP protocol suite. This layer includes applications or processes that use transport layer protocols to deliver the data to destination computers.
+2. Transport Layer
+This layer provides backbone to data flow between two hosts. This layer receives data from the application layer above it. There are many protocols that work at this layer but the two most commonly used protocols at transport layer are TCP and UDP.
+3. Network Layer
+This layer is also known as Internet layer. The main purpose of this layer is to organize or handle the movement of data on network. By movement of data, we generally mean routing of data over the network. The main protocol used at this layer is IP. While ICMP(used by popular ‘ping’ command) and IGMP are also used at this layer.
+4. Data Link Layer
+This layer is also known as network interface layer. This layer normally consists of device drivers in the OS and the network interface card attached to the system. Both the device drivers and the network interface card take care of the communication details with the media being used to transfer the data over the network. In most of the cases, this media is in the form of cables. Some of the famous protocols that are used at this layer include ARP(Address resolution protocol), PPP(Point to point protocol) etc.
+--
 What does the flags, ACK, SYN and SEQ mean and what protocol do
 they belong to? 
 
+SYN - (Synchronize) Initiates a connection
+
+ACK - Acknowledges received data
+
+Sequence number (32 bits)
+has a dual role:
+If the SYN flag is set (1), then this is the initial sequence number. The sequence number of the actual first data byte and the acknowledged number in the corresponding ACK are then this sequence number plus 1.
+If the SYN flag is clear (0), then this is the accumulated sequence number of the first data byte of this segment for the current session.
+--
 What is the difference between TCP and UDP?
+TCP divides the data(coming from the application layer) into proper sized chunks and then passes these chunks onto the network. It acknowledges received packets, waits for the acknowledgments of the packets it sent and sets timeout to resend the packets if acknowledgements are not received in time. The term ‘reliable connection’ is used where it is not desired to loose any information that is being transferred over the network through this connection. So, the protocol used for this type of connection must provide the mechanism to achieve this desired characteristic. For example, while downloading a file, it is not desired to loose any information(bytes) as it may lead to corruption of downloaded content.
+
+UDP provides a comparatively simpler but unreliable service by sending packets from one host to another. UDP does not take any extra measures to ensure that the data sent is received by the target host or not. The term ‘unreliable connection’ are used where loss of some information does not hamper the task being fulfilled through this connection. For example while streaming a video, loss of few bytes of information due to some reason is acceptable as this does not harm the user experience much.
 
 ---
 
