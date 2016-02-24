@@ -27,7 +27,7 @@ public class Server {
                 dataOut.writeUTF(transferredMessage);
                 dataOut.flush();
             }
-            
+
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
