@@ -30,15 +30,12 @@ public class Client {
                 receivedMessage = dataIn.readUTF();
                 System.out.println(receivedMessage);
             }
-
             dataIn.close();
             dataOut.close();
             socket.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void startClient() throws IOException {
