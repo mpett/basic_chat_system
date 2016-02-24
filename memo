@@ -1,0 +1,81 @@
+You shall write a socket based chat server and client using the java classes
+java.net.Socket and java.net.ServerSocket. The client
+should connect to the server through the Internet and this must work by two
+clients running locally on same computer as the server and one client
+connect remotely running on other computer
+---
+Done.
+Tested locally: yes, basic version working
+Tested internet: no
+---
+
+Specific Requirements
+---
+1. The implementation shall be written in Java. 
+Yes
+
+2. The implementation must be able to handle multiple events in a
+non-blocking manner. Specifically, this means that incoming and
+outgoing requests on both the client and server must be able to occur
+simultaneously. You must use threading on both the server and client.
+No, TODO
+
+3. The server must be able to handle multiple clients simultaneously without
+risking losing a message. 
+Not tested
+
+4. You must make sure that the order of the messages is preserved for all
+messages. 
+Not sure if tested, but this should work
+
+5. To know who writes what, everyone needs a username/alias that will be
+printed when they send a message. It is a task of the server to
+associate the name of the Client who sends the message in every
+message.
+No
+
+6. The server should broadcast messages to all the clients, if the receiver is
+not specified. However, it should also be possible for clients to
+send/receive private messages to/from each other.
+No
+---
+
+Tips
+---
+• On the server you will need to have a list of some sort (e.g.
+Arraylist) to save the sockets. 
+No
+* To avoid having to use multiple physical machines, use SSH (secure
+shell), by for example SSH:ing to
+myUserName@u-shell.csc.kth.se and starting a client from
+there. 
+ok
+---
+
+---
+
+QUESTIONS
+
+If you have n connected clients, how many instances of thread are
+needed by the server?
+
+If you have n connected clients, how many instances of thread are
+needed by the client?
+
+What does the Java keyword synchronized do? 
+
+What is a runnable in Java?
+
+Describe the four layers in the TCP/IP protocol stack. 
+
+What does the flags, ACK, SYN and SEQ mean and what protocol do
+they belong to? 
+
+What is the difference between TCP and UDP?
+
+---
+
+BONUS ASSIGNMENTS
+---
+Skipping this
+---
