@@ -38,18 +38,18 @@ public class Server implements Runnable {
         return -1;
     }
 
-    public synchronized void handle(int ID, String inputMessage) {
+    public synchronized void handleMessage(int ID, String inputMessage) {
         if (inputMessage.equals(TERMINATE_MESSAGE)) {
             ServerThread client = clientList.get(findClient(ID));
-            client.send(TERMINATE_MESSAGE);
-            remove(ID);
+            client.sendMessage(TERMINATE_MESSAGE);
+            killClient(ID);
         } else {
             for (ServerThread client : clientList)
-                client.send(ID + " " + inputMessage);
+                client.sendMessage(ID + " " + inputMessage);
         }
     }
 
-    public synchronized void remove(int ID) {
+    public synchronized void killClient(int ID) {
         int clientIndex = findClient(ID);
         if (clientIndex != -1) {
             ServerThread clientToKill = clientList.get(clientIndex);
@@ -75,14 +75,14 @@ public class Server implements Runnable {
         while (serverThread != null) {
             System.out.println("Waiting for a client to connect...");
             try {
-                addThread(server.accept());
+                addClient(server.accept());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void addThread(Socket socket) {
+    private void addClient(Socket socket) {
         System.out.println("Accepted new client at socket: " + socket);
         ServerThread newClient = new ServerThread(this, socket);
         clientList.add(newClient);
@@ -94,13 +94,12 @@ public class Server implements Runnable {
         }
     }
 
-    class ServerThread extends Thread
-    {
-        private Server server    = null;
-        private Socket socket    = null;
+    class ServerThread extends Thread {
+        private Server server;
+        private Socket socket;
         private int ID = -1;
-        private DataInputStream dataIn =  null;
-        private DataOutputStream dataOut = null;
+        private DataInputStream dataIn;
+        private DataOutputStream dataOut;
 
         public ServerThread(Server server, Socket socket) {
            super();
@@ -113,26 +112,21 @@ public class Server implements Runnable {
             System.out.println("Server Thread " + ID + " running.");
             while (true) {
                 try {
-                    server.handle(ID, dataIn.readUTF());
+                    server.handleMessage(ID, dataIn.readUTF());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        public void send(String msg)
-        {   try
-            {  dataOut.writeUTF(msg);
+        public void sendMessage(String message) {
+            try {
+                dataOut.writeUTF(message);
                 dataOut.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                server.killClient(ID);
             }
-            catch(IOException ioe)
-            {  System.out.println(ID + " ERROR sending: " + ioe.getMessage());
-                server.remove(ID);
-            }
-        }
-
-        public int getID() {
-            return ID;
         }
 
         public void open() throws IOException {
