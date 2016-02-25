@@ -9,102 +9,87 @@ public class Client implements Runnable{
     private DataInputStream dataIn;
     private DataOutputStream dataOut;
     private BufferedReader reader;
-    private ClientThread clientThread    = null;
-    private Thread thread              = null;
+    private ClientThread clientThread;
+    private Thread thread;
 
-    public static void main(String args[]) {
+    private final static String TERMINATE_MESSAGE = "end";
+
+    public static void main(String args[]) throws IOException {
         if (args.length != 2)
             System.out.println("Usage: java Client host port");
         else
             new Client(args[0], Integer.parseInt(args[1]));
     }
 
-    public Client(String serverName, int portNumber) {
-
-        System.out.println("Establishing connection. Please wait ...");
-            try {
-            socket = new Socket(serverName, portNumber);
-            System.out.println("Connected");
-            startClient();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public Client(String serverName, int portNumber) throws IOException {
+        System.out.println("Establishing connection with server.");
+        socket = new Socket(serverName, portNumber);
+        System.out.println("Connected to server.");
+        startClient();
     }
 
-    public void run()
-    {  while (thread != null)
-        {  try
-            {
+    public void run() {
+        while (thread != null) {
+            try {
                 String transferredMessage = reader.readLine();
                 dataOut.writeUTF(transferredMessage);
                 dataOut.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            catch(IOException ioe)
-            {
         }
     }
 
+    public void handleMessage(String message) throws IOException {
+        if (message.equals(TERMINATE_MESSAGE)) {
+            System.out.println("Press return to exit.");
+            if (thread != null) {
+                clientThread.closeThread();
+            }
+        }
+        else System.out.println(message);
     }
-
-    public void handle(String msg)
-    {  if (msg.equals(".bye"))
-    {  System.out.println("Good bye. Press RETURN to exit ...");
-    }
-    else
-        System.out.println(msg);
-    }
-
-
 
     public void startClient() throws IOException {
         dataIn = new DataInputStream(socket.getInputStream());
         dataOut = new DataOutputStream(socket.getOutputStream());
         reader = new BufferedReader(new InputStreamReader(System.in));
 
-        if (thread == null)
-        {  clientThread = new ClientThread(this, socket);
+        if (thread == null) {
+            clientThread = new ClientThread(this, socket);
             thread = new Thread(this);
             thread.start();
         }
     }
 
-    class ClientThread extends Thread
-    {  private Socket           socket   = null;
-        private Client       client   = null;
-        private DataInputStream  streamIn = null;
+    class ClientThread extends Thread {
+        private Socket socket;
+        private Client client;
+        private DataInputStream dataIn;
 
-        public ClientThread(Client _client, Socket _socket)
-        {  client   = _client;
-            socket   = _socket;
-            open();
+        public ClientThread(Client client, Socket socket) throws IOException {
+            this.client = client;
+            this.socket = socket;
+            openThread();
             start();
         }
-        public void open()
-        {  try
-        {  streamIn  = new DataInputStream(socket.getInputStream());
+
+        public void openThread() throws IOException {
+            dataIn = new DataInputStream(socket.getInputStream());
         }
-        catch(IOException ioe)
-        {  System.out.println("Error getting input stream: " + ioe);
+
+        public void closeThread() throws IOException {
+            if (dataIn != null) dataIn.close();
         }
-        }
-        public void close()
-        {  try
-        {  if (streamIn != null) streamIn.close();
-        }
-        catch(IOException ioe)
-        {  System.out.println("Error closing input stream: " + ioe);
-        }
-        }
-        public void run()
-        {  while (true)
-        {  try
-        {  client.handle(streamIn.readUTF());
-        }
-        catch(IOException ioe)
-        {  System.out.println("Listening error: " + ioe.getMessage());
-        }
-        }
+
+        public void run() {
+            while (true) {
+                try {
+                    client.handleMessage(dataIn.readUTF());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
