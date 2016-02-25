@@ -1,15 +1,16 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * Created by martinpettersson on 24/02/16.
  */
 public class Server implements Runnable {
-    private ServerSocket     server = null;
-    private Thread           serverThread = null;
-    private ServerThread clients[] = new ServerThread[50];
-    private int clientCount = 0;
+    private ServerSocket server;
+    private Thread serverThread;
+    private ArrayList<ServerThread> clientList = new ArrayList<ServerThread>();
+    private final static String TERMINATE_MESSAGE = "end";
 
     public static void main(String[] args) {
         if (args.length != 1)
@@ -29,37 +30,37 @@ public class Server implements Runnable {
         }
     }
 
-    private int findClient(int ID)
-    {  for (int i = 0; i < clientCount; i++)
-        if (clients[i].getID() == ID)
-            return i;
+    private int findClient(int ID) {
+        for (ServerThread client : clientList) {
+            if (client.ID == ID)
+                return clientList.indexOf(client);
+        }
         return -1;
     }
 
-    public synchronized void handle(int ID, String input)
-    {  if (input.equals(".bye"))
-    {  clients[findClient(ID)].send(".bye");
-        remove(ID); }
-    else
-        for (int i = 0; i < clientCount; i++)
-            clients[i].send(ID + ": " + input);
+    public synchronized void handle(int ID, String inputMessage) {
+        if (inputMessage.equals(TERMINATE_MESSAGE)) {
+            ServerThread client = clientList.get(findClient(ID));
+            client.send(TERMINATE_MESSAGE);
+            remove(ID);
+        } else {
+            for (ServerThread client : clientList)
+                client.send(ID + " " + inputMessage);
+        }
     }
 
-    public synchronized void remove(int ID)
-    {  int pos = findClient(ID);
-        if (pos >= 0)
-        {  ServerThread toTerminate = clients[pos];
-            System.out.println("Removing client thread " + ID + " at " + pos);
-            if (pos < clientCount-1)
-                for (int i = pos+1; i < clientCount; i++)
-                    clients[i-1] = clients[i];
-            clientCount--;
-            try
-            {  toTerminate.close(); }
-            catch(IOException ioe)
-            {  //Print stack strace
-             }
-             }
+    public synchronized void remove(int ID) {
+        int clientIndex = findClient(ID);
+        if (clientIndex != -1) {
+            ServerThread clientToKill = clientList.get(clientIndex);
+            System.out.println("Removed client with ID: " + ID + " at index " + clientIndex);
+            clientList.remove(clientIndex);
+            try {
+                clientToKill.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void startServer() {
@@ -81,18 +82,16 @@ public class Server implements Runnable {
         }
     }
 
-    private void addThread(Socket socket)
-    {  if (clientCount < clients.length)
-    {  System.out.println("Client accepted: " + socket);
-        clients[clientCount] = new ServerThread(this, socket);
-        try
-        {  clients[clientCount].open();
-            clients[clientCount].start();
-            clientCount++; }
-        catch(IOException ioe)
-        {  System.out.println("Error opening thread: " + ioe); } }
-    else
-        System.out.println("Client refused: maximum " + clients.length + " reached.");
+    private void addThread(Socket socket) {
+        System.out.println("Accepted new client at socket: " + socket);
+        ServerThread newClient = new ServerThread(this, socket);
+        clientList.add(newClient);
+        try {
+            newClient.open();
+            newClient.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     class ServerThread extends Thread
